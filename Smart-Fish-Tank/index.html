@@ -1,0 +1,93 @@
+<!DOCTYPE HTML><html>
+<head>
+  <title>Smart Aquatics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+  <link rel="icon" href="data:,"> -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-dark">
+    <!-- Make drop down menu with options for the about page, log page, and settings page -->
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#"><img src="Smart Aquatics Logo.png" alt="Company Logo"></a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="#">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="settings.html">Settings</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#"></a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav> 
+
+      <div class="p-5 bg-dark text-white rounded-0">
+        <div class="container">
+          <h1 class="mt-0">Sensor Dashboard</h1>
+        </div>
+      </div>
+      
+    <div class="content">
+      <div class="container py-4">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="card temperature">
+              <div class="card-body">
+                <h5 class="card-title text-uppercase mb-3"><i class="fas fa-thermometer-half me-2"></i>Temperature</h5>
+                <p class="card-text mb-1"><span class="reading"><span id="t1"></span> &deg;C</span></p>
+                <p class="card-text packet mb-0">Reading ID: <span id="rt1"></span></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card humidity">
+              <div class="card-body">
+                <h5 class="card-title text-uppercase mb-3"><i class="fas fa-tint me-2"></i>Water Quality</h5>
+                <p class="card-text mb-1"><span class="reading"><span id="h1"></span> &percnt;</span></p>
+                <p class="card-text packet mb-0">Reading ID: <span id="rh1"></span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>      
+    </div>
+<script>
+if (!!window.EventSource) { // check if browser supports EventSource
+ var source = new EventSource('/events'); // create EventSource object
+ 
+ source.addEventListener('open', function(e) { // listen for open event
+  console.log("Events Connected"); // log to console
+ }, false); // use false to prevent default behavior
+ source.addEventListener('error', function(e) { // listen for error event
+  if (e.target.readyState != EventSource.OPEN) { // if connection is closed
+    console.log("Events Disconnected"); // log to console
+  }
+ }, false); // use false to prevent default behavior
+ 
+ source.addEventListener('message', function(e) { // listen for message event
+  console.log("message", e.data); // log to console
+ }, false); // use false to prevent default behavior
+ 
+ source.addEventListener('new_readings', function(e) { // listen for new_readings event
+  console.log("new_readings", e.data); // log to console
+  var obj = JSON.parse(e.data); // parse JSON data
+  document.getElementById("t"+obj.id).innerHTML = obj.temperature.toFixed(2); // update temperature
+  document.getElementById("h"+obj.id).innerHTML = obj.humidity.toFixed(2); // update humidity
+  document.getElementById("rt"+obj.id).innerHTML = obj.readingId; // update reading ID
+  document.getElementById("rh"+obj.id).innerHTML = obj.readingId; // update reading ID
+ }, false);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE HTML><html>
+<head>
+  <title>Embedded Aquatech</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+  <link rel="icon" href="data:,"> -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="http://aquatech.local/favicon.ico">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/modules/exporting.js"></script>
+  <script src="https://code.highcharts.com/modules/export-data.js"></script>
+  <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+  <script src="https://code.highcharts.com/modules/series-label.js"></script>
+</head>
+<body class="bg-dark">
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+        <div class="container-fluid">
+          <img src="Embedded.png" alt="Embedded Aquatech">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="#about">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#settings">Settings</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="http://camera.local">Camera</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav> 
+
+      <div class="p-5 bg-dark text-white rounded-0">
+        <div class="container">
+          <h1 class="mt-0">Sensor Dashboard</h1> <!-- Change to center -->
+        </div>
+      </div>
+  <!--  Charts below -->
+  
+  <div id="chart-temperature" class="container mb-4"></div>
+  <div id="chart-tds" class="container mb-4"></div>
+  <script>
+    window.onload = function() {
+      var favicon = document.querySelector('link[rel="icon"]');
+      var img = document.createElement('img');
+      img.src = '/favicon.ico';
+      img.onload = function() {
+        favicon.href = img.src;
+      };
+    };
+    var chartT = new Highcharts.Chart({
+    chart: {
+      renderTo: 'chart-temperature'
+    },
+    title: {
+      text: 'Temperature Readings'
+    },
+    series: [{
+        showInLegend: false,
+        name: 'Temperature (Celsius)',
+        data: []
+      },
+      {
+        showInLegend: false,
+        name: 'Temperature (Fahrenheit)',
+        data: [],
+      }
+    ],
+    plotOptions: {
+      line: {
+        animation: false,
+        dataLabels: {
+          enabled: true
+        }
+      },
+      series: {
+        color: '#7C0A02'
+      }
+    },
+    xAxis: {
+      type: 'datetime',
+      dateTimeLabelFormats: {
+        second: '%H:%M:%S'
+      }
+    },
+    yAxis: [{
+      title: {
+        text: 'Temperature (Celsius/ Fahrenheit)'
+      }
+    }],
+    credits: {
+      enabled: false
+    }
+  });
+  setInterval(function() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        var x = (new Date()).getTime(),
+          y = parseFloat(this.responseText);
+        if (chartT.series[0].data.length > 40) {
+          chartT.series[0].addPoint([x, y], true, true, true);
+        } else {
+          chartT.series[0].addPoint([x, y], true, false, true);
+        }
+        var fahrenheit = (y * 1.8) + 32;
+        if (chartT.series[1].data.length > 40) {
+          chartT.series[1].addPoint([x, fahrenheit], true, true, true);
+        } else {
+          chartT.series[1].addPoint([x, fahrenheit], true, false, true);
+        }
+      }
+    };
+    xhttp.open("GET", "/temperature", true);
+    xhttp.send();
+  }, 10000);
+
+  
+  var chartW = new Highcharts.Chart({
+    chart:{ renderTo:'chart-tds' },
+    title: { text: 'Water Quality Readings' },
+    series: [{
+      showInLegend: false,
+      name: 'Water Quality',
+      data: []
+    }],
+    plotOptions: {
+      line: { animation: false,
+        dataLabels: { enabled: true }
+      },
+      series: { color: '#051094' }
+    },
+    xAxis: {
+      type: 'datetime',
+      dateTimeLabelFormats: { second: '%H:%M:%S' }
+    },
+    yAxis: {
+      title: { text: 'Water Quality (ppm)' }
+    },
+    credits: { enabled: false }
+  });
+  setInterval(function ( ) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        var x = (new Date()).getTime(),
+            y = parseFloat(this.responseText);
+        console.log(this.responseText);
+        if(chartW.series[0].data.length > 40) {
+          chartW.series[0].addPoint([x, y], true, true, true);
+        } else {
+          chartW.series[0].addPoint([x, y], true, false, true);
+        }
+      }
+    };
+    xhttp.open("GET", "/tds", true);
+    xhttp.send();
+  }, 10000);
+  function handleFormSubmit(formId) {
+    var form = document.getElementById(formId);
+    var formData = new FormData(form);
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", form.action + "?" + new URLSearchParams(formData).toString());
+    xhr.onload = function() {
+      if (xhr.readyState === xhr.DONE) {
+        if (xhr.status === 200) {
+          alert(xhr.responseText); // display the response message
+        }
+      }
+    };
+    xhr.send();
+    event.preventDefault();
+    return false; // prevent the form from submitting and redirecting
+  }
+
+  </script>
+  <div class="container py-5 text-white">
+    <h1 class="mb-5" id="settings">Settings</h1>
+    <form action="/tempSET"accept-charset="utf-8" id="tempForm">
+      <h2 class="mb-3">Water Temperature</h2>
+      <div class="mb-3">
+        <label for="temperature" class="form-label">Desired Temperature:</label>
+        <input type="number" id="temperature" name="temperature" class="form-control" min="65" max="85" required>
+        <small class="form-text text-muted">degrees celsius</small>
+      </div>
+      <button type="submit" class="btn btn-primary" onclick="handleFormSubmit('tempForm')">Save Changes</button>
+    </form>
+    <hr class="my-5">
+    <form action="/ppmSET" accept-charset="utf-8" id="ppmForm">
+      <h2 class="mb-3">Water Quality</h2>
+      <div class="mb-3">
+        <label for="ppm" class="form-label">Desired Water Quality:</label>
+        <input type="number" id="ppm" name="ppm" class="form-control" min="0" max="1000" required>
+        <small class="form-text text-muted">ppm</small>
+      </div>
+      <button type="submit" class="btn btn-primary" onclick="handleFormSubmit('ppmForm')">Save Changes</button>
+    </form>
+    <hr class="my-5">
+    <form action="/frequencySET" accept-charset="utf-8" id="freqForm">
+      <h2 class="mb-3">Feeding Schedule</h2>
+      <div class="mb-3">
+        <label for="frequency" class="form-label">Feeding Frequency:</label>
+        <input type="number" id="frequency" name="frequency" class="form-control" required>
+        <small class="form-text text-muted">times per day</small>
+      </div>
+      <button type="submit" class="btn btn-primary" onclick="handleFormSubmit('freqForm')">Save Changes</button>
+    </form>
+    <hr class="my-5">
+    <form action="/colorSET" accept-charset="utf-8" id="colorForm">
+      <h2 class="mb-3">LED Color</h2>
+      <div class="mb-3">
+        <label for="color" class="form-label">Color:</label>
+        <input type="color" id="color" name="color" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary" onclick="handleFormSubmit('colorForm')">Save Changes</button>
+    </form>
+    <hr class="my-5">
+    <form action="/emailSET" accept-charset="utf-8" id="emailForm">
+      <h2 class="mb-3">Email Notifications</h2>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email:</label>
+        <input type="email" id="email" name="email" class="form-control" required>
+        <small class="form-text text-muted">By entering your email, you agree to receive notifications about your aquarium.<br>To stop receiving notifications, enter nothing and click "Save Changes".</small>
+      </div>
+      <button type="submit" class="btn btn-primary" onclick="handleFormSubmit('emailForm')">Save Changes</button>
+    </form>
+    <hr class="my-5">
+  </div>
+  <div class="container py-5 text-white">
+    <h1 class="mb-5" id="about">About</h1>
+    <p>Aquatech is a project created by a group of students at Colorado State University. 
+      The goal of this project is to create a smart aquatic monitoring system that can be controlled remotely. 
+      The system is equipped with a temperature sensor, a water quality sensor, and a camera. 
+      The temperature sensor is used to monitor the temperature of the water and the water quality sensor is used to monitor the quality of the water. The camera is used to monitor the fish and the aquarium. 
+      The user can view the data collected by the sensors and the camera on the dashboard. 
+      The user can also change the settings.
+      Alerts are sent to the user when the temperature of the water is too high or too low (+ or - 10 degrees from the desired temperature), or the quality of the water is too high or too low (+ or - 100 ppm from the desired water quality).
+      The user can change the feeding schedule, and the color of the LED lights. The user can also receive email notifications about the aquarium.</p>
+  </div>
+  <!-- Add license here -->
+  <footer class="bg-dark text-center text-white">
+    <div class="container p-4">
+      <small>© 2023 Aquatech</small>
+      <br>
+      <small>Spencer Beer, and Kyle Nilsson for Hardware and Software Design of Embedded Systems</small>
+    </div>
+  </footer>
+
+
+</body>
+</html>
